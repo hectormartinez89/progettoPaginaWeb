@@ -1,24 +1,61 @@
-Caso d'uso UC1: consulta offerta
-Attore primario: utente non registrato
-Scenario principale di successo: 
-  L'utente consulta l'elenco delle tipologie di esame
-  L'utente sceglie una tipologia di esame e ne richiede i dettagli 
-  Il sistema mostra i dettagli della tipologia di esame scelta dall'utente
-  L'utente ripete i passi precedenti un numero indefinito di volte
+CREATE TABLE public.medico
+(
+  nome character varying(64) NOT NULL,
+  cognome character varying(64) NOT NULL,
+  specializzazione character varying(64),
+  CONSTRAINT pk_medico PRIMARY KEY (nome, cognome)
+)
 
-Caso d'uso UC2: crea esame (prenotazione)
-Attore primario: amministrazione
-Scenario principale di successo: 
-  L'ammistrazione crea un esame
-  L'amministrazione imposta una tipologia di esame all'esame creato
-  L'amministrazione associa un paziente all'esame creato
-  Il sistema registra l'esame (impostando automaticamente la data di prenotazione)
-Precondizioni: l'amministratore è identificato e autenticato
+CREATE TABLE public.paziente
+(
+  id character varying(64) NOT NULL,
+  nome character varying(64) NOT NULL,
+  cognome character varying(64) NOT NULL,
+  datanascita character varying(64) NOT NULL,
+  grupposang character varying(64) NOT NULL,
+  email character varying(64),
+  CONSTRAINT pk_paziente PRIMARY KEY (id)
+)
 
-Caso d'uso UC4: inserimento tipologia di esame
-Attore primario: amministrazione
-Scenario principale:
-  L'amministratore inserisce una nuova tipologia di esame specificandone i dettagli
-  Il sistema registra la tipologia di esame
-  I punti precedenti vengono ripetuti fino a che necessario
-Precondizioni: l'amministratore è identificato e autenticato
+CREATE TABLE public.utente
+(
+  id character varying(64) REFERENCES paziente(id) NOT NULL,
+  nomeUtente character varying(64) NOT NULL,
+  pass character varying(64) NOT NULL,
+  ruolo character varying(64) NOT NULL,
+  CONSTRAINT pk_utente PRIMARY KEY (nomeUtente, pass)
+)
+
+CREATE TABLE public.tipoesame
+(
+  codice character varying(64) NOT NULL,
+  nome character varying(64) NOT NULL,
+  descrizione character varying(64) NOT NULL,
+  costo integer NOT NULL,
+  prerequisiti character varying(64),
+  CONSTRAINT pk_tipoesame PRIMARY KEY (codice)
+)
+
+CREATE TABLE public.esame
+(
+  codice character varying(64) NOT NULL,
+  codicetipoesame character varying(64) NOT NULL,
+  nometipoesame character varying(64),
+  idpaziente character varying(64) NOT NULL,
+  nomepaziente character varying(64),
+  dataprenotazione character varying(64) NOT NULL,
+  dataesame character varying(64),
+  nomemedico character varying(64),
+  cognomemedico character varying(64),
+  risultati character varying(64),
+  CONSTRAINT pk_esame PRIMARY KEY (codice),
+  CONSTRAINT esame_codiceesame_fkey FOREIGN KEY (codicetipoesame)
+      REFERENCES public.tipoesame (codice) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE NO ACTION,
+  CONSTRAINT esame_idpaziente_fkey FOREIGN KEY (idpaziente)
+      REFERENCES public.paziente (id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE NO ACTION,
+  CONSTRAINT esame_medico_fkey FOREIGN KEY (nomemedico, cognomemedico)
+      REFERENCES public.medico (nome, cognome) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE NO ACTION
+)
